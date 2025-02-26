@@ -95,7 +95,7 @@ dotnet build
 7. **Acessar a Documentação via Swagger**:
 - Por padrão, a API expõe o Swagger em `/swagger`. Exemplo:
   
-   `https://localhost:5001/swagger`
+  ```https://localhost:5001/swagger```
   
 - Use o Swagger para testar os endpoints.
 Uso Básico dos Endpoints
@@ -110,29 +110,31 @@ Resposta: Lista dos vídeos inseridos.
 **GET /api/videos/filter**
 Descrição: Filtra os vídeos persistidos com base em parâmetros opcionais (título, duração, autor, data, q).
 
-`Exemplo: /api/videos/filter?title=exemplo&q=medicamentos`
+```Exemplo: /api/videos/filter?title=exemplo&q=medicamentos```
 
 **POST /api/videos/insert**
 Descrição: Insere um novo vídeo manualmente.
 Exemplo de Payload:
-json
 
-`{
+Json
+```
+{
   "Title": "Exemplo de Vídeo",
   "Description": "Descrição do vídeo",
   "Channel": "Canal Exemplo",
   "Duration": "PT10M3S",
   "PublishDate": "2022-05-01T00:00:00Z"
-}`
+}
+```
 
 **PUT /api/videos/update**
 Descrição: Atualiza os dados de um vídeo existente.
 
-`Exemplo de Payload: Similar ao de inserção, mas deve conter o ID (gerado automaticamente).`
+```Exemplo de Payload: Similar ao de inserção, mas deve conter o ID (gerado automaticamente).```
 
 **DELETE /api/videos/{id}**
 
-`Descrição: Realiza o soft delete do vídeo (marca como excluído).`
+```Descrição: Realiza o soft delete do vídeo (marca como excluído).```
 
 
 
