@@ -8,7 +8,7 @@ A arquitetura do projeto está organizada em camadas, conforme ilustrado abaixo:
 
                        +--------------------------------+
                        |       Manipulaê API            |
-                       |  (Manipulae Video Challenge)    |
+                       |  (Manipulae Video )            |
                        +--------------------------------+
                                       /     \
                                      /       \
@@ -68,10 +68,10 @@ A API realiza as seguintes operações:
 ## Instruções para Compilar/Executar
 
 1. **Clone o repositório**:
-git clone <URL-do-repositório> cd ManipulaeVideoChallenge
+git clone <URL-do-repositório> cd ManipulaeAPI
 
 2. **Abrir a solução**:
-- Abra o arquivo `ManipulaeVideoChallenge.sln` no Visual Studio 2022 ou em sua IDE preferida.
+- Abra o arquivo `ManipulaeVideo.sln` no Visual Studio 2022 ou em sua IDE preferida.
 
 3. **Restaurar os pacotes NuGet**:
 - O Visual Studio geralmente faz isso automaticamente, ou execute:
