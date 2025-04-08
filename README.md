@@ -1,263 +1,160 @@
-# Patient Management System
+# Manipulaê Video 
 
-## 1. Visão Geral e Arquitetura
+Este projeto desenvolvido consiste em uma API em .NET 8 para consulta, inserção, atualização e exclusão (soft delete) de dados obtidos a partir da API de vídeos do YouTube. A solução adota os princípios de Clean Architecture e Domain-Driven Design (DDD) e utiliza JWT para proteger os endpoints.
 
-### Visão Geral
+## Desenho da Arquitetura
 
-Esta solução foi concebida para ser robusta, escalável e de fácil manutenção, adotando boas práticas de Clean Code, SOLID, Domain-Driven Design (DDD) e Clean Architecture. O principal desafio é garantir que o sistema de gestão de pacientes e históricos médicos seja capaz de lidar com grandes volumes de dados, mantendo consultas performáticas e organizando os dados de forma que a escalabilidade futura seja garantida.
+A arquitetura do projeto está organizada em camadas, conforme ilustrado abaixo:
 
-### Arquitetura DDD e Clean Code
-
-O projeto segue os princípios da Clean Architecture e está dividido em:
-
-- **Domain:** Entidades e regras de negócio.
-- **Application:** DTOs e interfaces que representam os casos de uso.
-- **Infrastructure:** Implementações dos serviços, acesso a dados (EF Core com SQLite) e integração com APIs externas.
-- **API:** Camada de apresentação com endpoints RESTful e configuração de autenticação JWT.
-
-### Diagrama Arquitetural
-
-```
-                    +---------------------------+
-                    |        Patient.API        |
-                    | (Controllers + JWT Auth) |
-                    +-------------+-------------+
+                       +--------------------------------+
+                       |       Manipulaê API            |
+                       |  (Manipulae Video )            |
+                       +--------------------------------+
+                                      /     \
+                                     /       \
+                     +---------------+     +-------------------+
+                     | AuthController |   | VideosController |
+                     +---------------+     +-------------------+
+                                 \           /
+                                  \         /
+                         +---------------------+
+                         |  Application Layer  |
+                         |  (DTOs, Interfaces) |
+                         +---------------------+
                                   |
-              +------------------+------------------+
-              |                                     |
-     +--------v--------+                   +--------v--------+
-     |   Application   |                   |   Infrastructure |
-     | DTOs + Interfaces|                 |  EF Core, APIs     |
-     +--------+--------+                   +--------+--------+
-              |                                     |
-     +--------v--------+                   +--------v--------+
-     |     Domain      |                   |     Database     |
-     |  Entidades DDD  |                   |   SQLite (EF)    |
-     +-----------------+                   +------------------+
-```
+                                  v
+                         +---------------------+
+                         |   Domain Layer      |
+                         |   (Entities: Video) |
+                         +---------------------+
+                                  |
+                                  v
+                         +---------------------+
+                         | Infrastructure Layer|
+                         | (EF Core, Services) |
+                         +---------------------+
+                                  |
+                                  v
+                         +---------------------+
+                         |  SQLite Database    |
+                         +---------------------+
 
----
 
-## 2. Estrutura do Projeto
 
-```
-PatientSolution/
-├── Patient.API/                       # Camada de apresentação (Controllers + Auth + Swagger)
-│   ├── Controllers/
-│   │   ├── AuthController.cs
-│   │   ├── ExternalExamsController.cs
-│   │   ├── MedicalHistoryController.cs
-│   │   └── PatientsController.cs
-│   ├── appsettings.json
-│   ├── Program.cs
-│   └── Program.Public.cs
-│
-├── Patient.Application/              # Casos de uso e contratos
-│   ├── DTOs/
-│   │   ├── CreateMedicalHistoryDto.cs
-│   │   ├── CreatePatientDto.cs
-│   │   ├── ExamDto.cs
-│   │   ├── MedicalHistoryDto.cs
-│   │   ├── PatientDto.cs
-│   │   ├── UpdateMedicalHistoryDto.cs
-│   │   └── UpdatePatientDto.cs
-│   └── Interfaces/
-│       ├── IExamsService.cs
-│       ├── IMedicalHistoryService.cs
-│       └── IPatientService.cs
-│
-├── Patient.Domain/                   # Entidades do domínio
-│   └── Entities/
-│       ├── MedicalHistory.cs
-│       └── Patient.cs
-│
-├── Patient.Infrastructure/          # Acesso a dados e integrações externas
-│   ├── Data/
-│   │   └── ApplicationDbContext.cs
-│   ├── Models/
-│   │   └── BRCepResponse.cs
-│   └── Services/
-│       ├── ExamsService.cs
-│       ├── MedicalHistoryService.cs
-│       └── PatientService.cs
-│
-├── tests/
-│   ├── Patient.API.IntegrationTests/
-│   │   └── PatientsControllerIntegrationTests.cs
-│   ├── Patient.API.Tests/
-│   │   ├── ExternalExamsControllerTests.cs
-│   │   ├── MedicalHistoryControllerTests.cs
-│   │   └── PatientsControllerTests.cs
-│   └── Patient.Infrastructure.Tests/
-│       ├── ExamsServiceTests.cs
-│       ├── MedicalHistoryServiceTests.cs
-│       └── PatientServiceTests.cs
-```
+## Tecnologias Utilizadas
 
----
+- **.NET 8**: Plataforma de desenvolvimento.
+- **C#**: Linguagem de programação.
+- **Entity Framework Core com SQLite**: Banco de dados local para persistência dos dados.
+- **JWT**: Implementado vpara proteger os endpoints.
+- **HttpClient e System.Text.Json**: Para realizar requisições REST à API do YouTube e interpretar as respostas JSON sem dependências externas.
+- **Swagger**: Para documentação e teste interativo dos endpoints.
+- **xUnit e Moq**: Para testes unitários.
 
-## 3. Tecnologias e Boas Práticas
+## Como Funciona
 
-- **.NET 8**, **C#**, **Entity Framework Core** com **SQLite**
-- **DDD** (Domain-Driven Design)
-- **Autenticação JWT**
-- **Swagger/OpenAPI** para documentação
-- **xUnit** + **Moq** para testes unitários
-- **WebApplicationFactory** para testes de integração
+A API realiza as seguintes operações:
+1. **Busca e Persistência de Vídeos**: 
+   - Consome a API do YouTube para obter vídeos relacionados à manipulação de medicamentos, filtrados para o ano de 2022 e vídeos brasileiros.
+   - Os dados são persistidos em um banco SQLite utilizando o EF Core.
+   - A duração dos vídeos é obtida por uma chamada adicional para o endpoint de detalhes da API do YouTube e convertida do formato ISO 8601 para um formato legível.
 
----
+2. **Endpoints CRUD**:
+   - **Filtrar**: Permite filtrar os vídeos por título, duração, autor, data de publicação e um parâmetro “q” para busca em título, descrição e nome do canal.
+   - **Inserir**: Insere novos registros de vídeos no banco.
+   - **Atualizar**: Atualiza dados de vídeos já existentes.
+   - **Excluir (Soft Delete)**: Marca o registro como excluído sem removê-lo fisicamente do banco.
 
-## 4. Como Executar
+## Instruções para Compilar/Executar
 
-```bash
-git clone <url-do-repositorio>
-cd PatientSolution
-dotnet restore
+1. **Clone o repositório**:
+git clone <URL-do-repositório> cd ManipulaeAPI
+
+2. **Abrir a solução**:
+- Abra o arquivo `ManipulaeVideo.sln` no Visual Studio 2022 ou em sua IDE preferida.
+
+3. **Restaurar os pacotes NuGet**:
+- O Visual Studio geralmente faz isso automaticamente, ou execute:
+  ```
+  dotnet restore
+  ```
+
+4. **Configurar as variáveis de ambiente**:
+- Defina a variável de ambiente `YOUTUBE_API_KEY` com sua chave da API do YouTube.
+- No arquivo `appsettings.json` da API (Manipulae.API), ajuste as configurações conforme necessário (por exemplo, credenciais de Basic Auth para gerar o token do JWT).
+
+5. **Compilar a Solução**:
 dotnet build
-dotnet run --project src/Patient.API
+
+
+6. **Executar a API**:
+- Defina o projeto de inicialização (Manipulae.API).
+- Execute a aplicação (F5 ou `dotnet run`).
+- A aplicação utilizará o EF Core para criar automaticamente o banco SQLite (se ainda não existir) e suas tabelas.
+
+7. **Acessar a Documentação via Swagger**:
+- Por padrão, a API expõe o Swagger em `/swagger`. Exemplo:
+
+  ```https://localhost:5001/swagger```
+
+- Use o Swagger para testar os endpoints.
+Uso Básico dos Endpoints
+
+Manipulação de Vídeos (Manipulae.API)
+
+**POST /api/videos/fetch-youtube**
+Descrição: Busca vídeos do YouTube e insere os registros no banco.
+Exemplo de Payload: (não é necessário enviar dados, a chamada inicia o processo)
+Resposta: Lista dos vídeos inseridos.
+
+**GET /api/videos/filter**
+Descrição: Filtra os vídeos persistidos com base em parâmetros opcionais (título, duração, autor, data, q).
+
+```Exemplo: /api/videos/filter?title=exemplo&q=medicamentos```
+
+**POST /api/videos/insert**
+Descrição: Insere um novo vídeo manualmente.
+Exemplo de Payload:
+
+Json
+```
+{
+  "Title": "Exemplo de Vídeo",
+  "Description": "Descrição do vídeo",
+  "Channel": "Canal Exemplo",
+  "Duration": "PT10M3S",
+  "PublishDate": "2022-05-01T00:00:00Z"
+}
 ```
 
-Abra no navegador:
-```
-https://localhost:<porta>/swagger
-```
+**PUT /api/videos/update**
+Descrição: Atualiza os dados de um vídeo existente.
+
+```Exemplo de Payload: Similar ao de inserção, mas deve conter o ID (gerado automaticamente).```
+
+**DELETE /api/videos/{id}**
+
+```Descrição: Realiza o soft delete do vídeo (marca como excluído).```
+
+
+
+8. **Executar os Testes Unitários**:
+- Dentro da pasta `tests/`, execute:
+  ```
+  dotnet test
+  ```
+- Ou utilize o Test Explorer do Visual Studio para visualizar os resultados.
+
+## Possíveis Evoluções Futuras
+
+- **Mensageria Assíncrona**: Implementar um broker (como RabbitMQ ou Kafka) para desacoplar o processo de ingestão de dados do YouTube da operação CRUD.
+- **Persistência em Banco Relacional**: Utilizar SQL Server ou PostgreSQL para produção, garantindo histórico persistente e maior robustez.
+- **Cache Distribuído (Redis)**: Implementar caching no endpoint de consolidação para melhorar a performance em cenários de alta carga.
+- **Monitoramento e Observabilidade**: Integrar com ferramentas como Application Insights, Prometheus e Grafana para monitoramento de logs, métricas e alertas.
+
+## Resumo
+
+Este projeto demonstra a aplicação de boas práticas de Clean Architecture e DDD, com uma separação clara de camadas e responsabilidades. A API permite gerenciar dados obtidos da API do YouTube, utilizando SQLite para persistência, e está protegida por JWT. Com testes unitários e documentação via Swagger, a solução fornece uma base sólida para evoluções futuras e para a implementação de melhorias em ambientes de produção.
 
 ---
-
-## 5. Funcionalidades
-
-- CRUD de Pacientes
-- CRUD de Histórico Médico
-- Consulta externa de exames (mock ou BrasilAPI)
-- Autenticação JWT (com endpoint de login)
-- Soft Delete de registros
-- Testes automatizados (unitários e integração)
-
----
-
-## 6. Evoluções Futuras
-
-- Integração com RabbitMQ ou Kafka
-- Migração para PostgreSQL ou SQL Server em produção
-- Cache distribuído com Redis
-- Dashboard com Prometheus e Grafana
-- Logs estruturados com Serilog
-- Suporte a Multi-Tenant
-
----
-
-## 7. Testes
-
-```bash
-dotnet test
-```
-
-Ou rode os testes pelo Test Explorer no Visual Studio.
-
----
-
-## 8. Autenticação
-
-1. Endpoint de login:
-```http
-POST /api/auth/login
-```
-
-2. Adicione o token retornado no header:
-```http
-Authorization: Bearer {seu_token}
-```
-
----
-
-## 9. Swagger
-
-O Swagger está habilitado em:
-```
-https://localhost:<porta>/swagger
-```
-
-Permite testar endpoints protegidos com JWT diretamente via UI.
-
----
-
-## 10. Arquitetura e Separação de Responsabilidades
-Camadas Independentes:
-A aplicação está dividida em quatro camadas distintas:
-
-**Domain:** Contém as entidades e as regras de negócio.
-
-**Application:** Define DTOs, interfaces e casos de uso.
-
-**Infrastructure:** Gerencia o acesso aos dados (EF Core com SQLite) e integra serviços externos (ex.: API para consulta de exames).
-
-**API**: Exposição dos endpoints RESTful.
-Essa separação facilita a manutenção e a escalabilidade, permitindo que mudanças em uma camada (ex.: troca de banco de dados) não afetem a lógica de negócio.
-
-**Microservices / Modularização:**
-Em um cenário de grandes volumes e alta demanda, a aplicação pode ser desmembrada em microservices independentes para cada domínio (por exemplo, serviço de pacientes e serviço de histórico médico). Essa abordagem facilita o escalonamento horizontal, possibilitando a replicação de componentes que são mais críticos.
-
-## 11. Boas Práticas de Modelagem de Dados
-**Entidades e Relacionamentos:**
-As entidades foram modeladas de forma a refletir o domínio real. O uso de relacionamentos (ex.: Paciente e seu Históricos Médicos) é feito considerando os conceitos do DDD para garantir que a modelagem seja fiel ao negócio.
-
-**Normalização e Índices:**
-
-**Normalização:**
-Os dados são normalizados para evitar redundâncias e manter a integridade.
-
-**Índices:**
-Índices apropriados são criados nas colunas frequentemente consultadas (ex.: CPF, Data de Nascimento, e campos utilizados em filtros e joins) para acelerar as consultas, principalmente com grandes volumes de registros.
-
-**Soft Delete:**
-Para exclusões, é utilizada a estratégia de soft delete, marcando registros como deletados sem removê-los fisicamente. Isso possibilita auditoria e mantém a integridade referencial mesmo quando os dados crescem em quantidade.
-
-## 12. Consultas Performáticas
-**Otimização de Consultas com Entity Framework:**
-
-Uso adequado de Include e ThenInclude para carregamento de relacionamentos apenas quando necessário.
-
-Uso de projeções (select) para retornar apenas os campos essenciais.
-
-Análise dos planos de execução e otimização de consultas quando houver necessidade.
-
-**Cache Distribuído:**
-Implementar cache (por exemplo, via Redis) para armazenar resultados de consultas frequentes, como listagens e relatórios consolidados. Isso diminui a carga sobre o banco de dados e melhora o tempo de resposta.
-
-**Paginação e Filtros:**
-Para grandes volumes de dados, o endpoint de listagem utiliza paginação e filtros eficientes, garantindo que apenas subconjuntos dos dados sejam retornados por consulta.
-
-## 13. Organização dos Dados para Grandes Volumes
-**Particionamento (Partitioning) e Sharding:**
-Em cenários de produção, os bancos de dados relacionais podem utilizar particionamento para distribuir a carga dos dados em várias partições. Quando a escala exigir, pode-se optar por sharding para dividir os dados em vários bancos de dados, permitindo escalonamento horizontal.
-
-**Armazenamento e Arquivamento:**
-Dados históricos que não são acessados frequentemente podem ser movidos para tabelas de arquivo ou sistemas de armazenamento diferenciados, melhorando o desempenho das consultas sobre os dados ativos.
-
-## 14. Estratégias de Escalabilidade
-**Escalabilidade Horizontal:**
-A aplicação pode ser containerizada com Docker e orquestrada via Kubernetes, permitindo o escalonamento horizontal de microservices conforme a demanda. Os endpoints mais críticos podem ter réplicas adicionais.
-
-**Mensageria e Processamento Assíncrono:**
-Em cenários onde a ingestão de dados externos (por exemplo, consulta de exames) pode ser intensiva, o uso de uma fila de mensageria (RabbitMQ, Kafka) permite que o processamento seja distribuído e desacoplado do fluxo principal da API.
-
-**Monitoramento e Observabilidade:**
-Integração com ferramentas de monitoramento (como Application Insights, Prometheus e Grafana) para visualizar métricas, identificar gargalos e ajustar a escalabilidade dinamicamente.
-
-## 15. Principais Decisões Técnicas
-
-**Adotar Clean Architecture e DDD:**
-Garante que as regras de negócio estejam isoladas na camada de domínio, facilitando a manutenção e a evolução do sistema sem impacto em outras camadas.
-
-**Uso do Entity Framework Core com SQLite:**
-Para este MVP, o SQLite foi escolhido pela simplicidade. No entanto, a arquitetura permite uma fácil migração para bancos de dados mais robustos em produção.
-
-**Implementação de JWT para Autenticação:**
-Garante segurança e escalabilidade nas operações, facilitando a integração com outros serviços e a gestão de credenciais de forma centralizada.
-
-**Modularização e Microservices:**
-A arquitetura modular permite que cada componente (ex.: gerenciamento de pacientes, histórico médico, consulta externa) seja escalado de forma independente.
-
-## 16. Conclusão
-
-Com essas práticas e decisões técnicas, a solução foi projetada para ser escalável, performática e de fácil manutenção. A separação em camadas e a utilização de boas práticas de modelagem e indexação, juntamente com estratégias de cache e escalonamento horizontal, garantem que o sistema poderá ser adaptado para lidar com grandes volumes de dados e alta demanda. Essa arquitetura serve como base sólida para evolução e implantação em ambientes de produção, mantendo a integridade e a performance dos dados ao longo do tempo.
+Qualquer dúvida ou sugestão, sinta-se à vontade para abrir uma issue ou enviar um pull request.
